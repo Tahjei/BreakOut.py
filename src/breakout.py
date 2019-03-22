@@ -95,6 +95,15 @@ class Ball(pygame.sprite.Sprite):
                 self.hit = not self.hit
             elif self.hit:
                 self.hit = not self.hit
+
+            if self.rect.colliderect(brick1.rect) == 1 and not self.hit:
+                angle = -angle
+                brick1.health -= 100
+                if brick1.health <= 0:
+                    brick1.delete()
+                self.hit = not self.hit
+            elif self.hit:
+                self.hit = not self.hit
         self.vector = (angle, z)
 
 
@@ -141,6 +150,7 @@ class Paddle(pygame.sprite.Sprite):
         self.movepos = [0, 0]
         self.state = "still"
 
+
 class Brick(pygame.sprite.Sprite):
     """Movable tennis 'bat' with which one hits the ball
     Returns: bat object
@@ -172,6 +182,13 @@ class Brick(pygame.sprite.Sprite):
             self.rect = newpos
         pygame.event.pump()
 
+
+    def delete(self):
+        self.kill()
+        self.area = background
+        pygame.sprite.Sprite.alive(self)
+
+
 def main():
     # Initialize screen
     pygame.init()
@@ -179,6 +196,7 @@ def main():
     pygame.display.set_caption('Tom\'s Pong: v' + str(VERSION))
 
     # Fill background
+    global background
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((0, 0, 0))
@@ -191,9 +209,12 @@ def main():
     speed = 13
     rand = 0.1 * random.randint(5, 8)
     ball = Ball((0.47, speed))
+
+    global brick1
     brick1 = Brick()
 
     # Initialize sprites
+    global bricksprite
     playersprites = pygame.sprite.RenderPlain(player1)
     ballsprite = pygame.sprite.RenderPlain(ball)
     bricksprite = pygame.sprite.RenderPlain(brick1)
