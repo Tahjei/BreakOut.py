@@ -58,13 +58,13 @@ class Ball(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.vector = vector
         self.hit = 0
+        self.strength = 50
         self.state = "still"
         self.reinit()
 
     def reinit(self):
         self.state = "still"
-        # self.movepos = [0,0]
-        self.rect.center = (self.area.centerx,430)
+        self.rect.center = (self.area.centerx,440)
 
     def update(self):
         newpos = calcnewpos(self.rect, self.vector)
@@ -93,17 +93,13 @@ class Ball(pygame.sprite.Sprite):
             if self.rect.colliderect(player1.rect) == 1 and not self.hit:
                 angle = -angle
                 self.hit = not self.hit
+            elif self.rect.colliderect(brick1.rect) == 1 and not self.hit and brick1.health > 0:
+                angle = -angle
+                brick1.health -= self.strength
+                self.hit = not self.hit
             elif self.hit:
                 self.hit = not self.hit
 
-            if self.rect.colliderect(brick1.rect) == 1 and not self.hit:
-                angle = -angle
-                brick1.health -= 100
-                if brick1.health <= 0:
-                    brick1.delete()
-                self.hit = not self.hit
-            elif self.hit:
-                self.hit = not self.hit
         self.vector = (angle, z)
 
 
@@ -152,13 +148,6 @@ class Paddle(pygame.sprite.Sprite):
 
 
 class Brick(pygame.sprite.Sprite):
-    """Movable tennis 'bat' with which one hits the ball
-    Returns: bat object
-    Functions: reinit, update, moveup, movedown
-    Attributes: which, speed"""
-
-    X = 0
-    Y = 1
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -172,26 +161,32 @@ class Brick(pygame.sprite.Sprite):
 
     def reinit(self):
         self.state = "still"
-        self.movepos = [0, -255]
         self.rect.topright = self.area.topright
 
-
     def update(self):
-        newpos = self.rect.move(self.movepos)
-        if self.area.contains(newpos):
-            self.rect = newpos
-        pygame.event.pump()
-
-
-    def delete(self):
-        self.kill()
-        self.area = background
-        pygame.sprite.Sprite.alive(self)
+        brick_bg = pygame.Surface((128, 64))
+        brick_bg = brick_bg.convert()
+        if self.health > 0:
+            # if self.health > 75:
+            #     brick_bg.fill((55,208,51))
+            # elif self.health > 50:
+            #     brick_bg.fill((165,208,66))
+            # elif self.health > 25:
+            #     brick_bg.fill((208,160,71))
+            # elif self.health > 0:
+            #     brick_bg.fill((208,66,36))
+            # screen.blit(brick_bg, self.rect)
+            bricksprite.draw(screen)
+        else:
+            brick_bg.fill((0, 0, 0))
+            screen.blit(brick_bg, self.rect)
 
 
 def main():
     # Initialize screen
     pygame.init()
+
+    global screen
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption('Tom\'s Pong: v' + str(VERSION))
 
@@ -213,8 +208,10 @@ def main():
     global brick1
     brick1 = Brick()
 
+
     # Initialize sprites
     global bricksprite
+
     playersprites = pygame.sprite.RenderPlain(player1)
     ballsprite = pygame.sprite.RenderPlain(ball)
     bricksprite = pygame.sprite.RenderPlain(brick1)
@@ -243,13 +240,18 @@ def main():
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     player1.still()
 
-        screen.blit(background, ball.rect, ball.rect)
-        screen.blit(background, player1.rect, player1.rect)
+        screen.blit(background, ball.rect, ball.rect)   # cover up ball
+        screen.blit(background, player1.rect, player1.rect) # cover up paddle
+
+        brick1.update()     # disappears if health <=0, stays otherwise
+
         ballsprite.update()
         playersprites.update()
-        ballsprite.draw(screen)
-        bricksprite.draw(screen)
-        playersprites.draw(screen)
+        bricksprite.update()
+
+        ballsprite.draw(screen) # draw updated ball
+        playersprites.draw(screen)  # draw updated paddle
+
         pygame.display.flip()
 
 
