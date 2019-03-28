@@ -82,9 +82,9 @@ class Ball(pygame.sprite.Sprite):
             if (tl and bl) or (tr and br):
                 angle = math.pi - angle
             if (bl and br):
-                raise pygame.error("You lose!")
-
-
+                raise pygame.error("You lose!") #Right now just throws an error. Was looking into how to make a new
+                                                #window pop up with a button: Play again? Y/N. Still working on that.
+                                                #But the ball stops the game when it hits the bottom, so I think that fulfulls the requirement.
 
         else:
             # Deflate the rectangles so you can't catch a ball behind the bat
@@ -96,8 +96,8 @@ class Ball(pygame.sprite.Sprite):
             # bat, the ball reverses, and is still inside the bat, so bounces around inside.
             # This way, the ball can always escape and bounce away cleanly
             if self.rect.colliderect(player1.rect) == 1 and not self.hit:
-                angle = -angle
-                self.hit = not self.hit
+                    angle = -angle
+                    self.hit = not self.hit
             elif self.rect.colliderect(brick1.rect) == 1 and not self.hit and brick1.health > 0:
                 angle = -angle
                 brick1.health -= self.strength
