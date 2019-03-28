@@ -24,6 +24,7 @@ import pygame
 from pygame.locals import *
 
 
+
 def load_png(name):
     """ Load image and return image object"""
     fullname = os.path.join('../img', name)
@@ -82,6 +83,8 @@ class Ball(pygame.sprite.Sprite):
                 angle = math.pi - angle
             if (bl and br):
                 raise pygame.error("You lose!")
+
+
 
         else:
             # Deflate the rectangles so you can't catch a ball behind the bat
