@@ -80,6 +80,8 @@ class Ball(pygame.sprite.Sprite):
                 angle = -angle
             if (tl and bl) or (tr and br):
                 angle = math.pi - angle
+            if (bl and br):
+                raise pygame.error("You lose!")
 
         else:
             # Deflate the rectangles so you can't catch a ball behind the bat
