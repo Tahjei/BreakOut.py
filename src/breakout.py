@@ -59,7 +59,7 @@ class Ball(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.vector = vector
         self.hit = 0
-        self.strength = 50
+        self.strength = 0
         self.state = "still"
         self.reinit()
 
@@ -68,6 +68,7 @@ class Ball(pygame.sprite.Sprite):
         self.rect.center = (self.area.centerx,440)
 
     def update(self):
+
         newpos = calcnewpos(self.rect, self.vector)
         self.rect = newpos
         (angle, z) = self.vector
@@ -82,9 +83,9 @@ class Ball(pygame.sprite.Sprite):
             if (tl and bl) or (tr and br):
                 angle = math.pi - angle
             if (bl and br):
-                raise pygame.error("You lose!") #Right now just throws an error. Was looking into how to make a new
+                self.reinit()#raise pygame.error("You lose!") #Right now just throws an error. Was looking into how to make a new
                                                 #window pop up with a button: Play again? Y/N. Still working on that.
-                                                #But the ball stops the game when it hits the bottom, so I think that fulfulls the requirement.
+                                                    #But the ball stops the game when it hits the bottom, so I think that fulfulls the requirement.
 
         else:
             # Deflate the rectangles so you can't catch a ball behind the bat
@@ -96,12 +97,25 @@ class Ball(pygame.sprite.Sprite):
             # bat, the ball reverses, and is still inside the bat, so bounces around inside.
             # This way, the ball can always escape and bounce away cleanly
             if self.rect.colliderect(player1.rect) == 1 and not self.hit:
-                    angle = -angle
-                    self.hit = not self.hit
-            elif self.rect.colliderect(brick1.rect) == 1 and not self.hit and brick1.health > 0:
                 angle = -angle
-                brick1.health -= self.strength
                 self.hit = not self.hit
+            elif self.rect.colliderect(brick1.rect) == 1 and not self.hit and brick1.health > 0:
+                tr = not self.rect.collidepoint(brick1.rect.topright)
+                tl = not self.rect.collidepoint(brick1.rect.topleft)
+                br = not self.rect.collidepoint(brick1.rect.bottomright)
+                bl = not self.rect.collidepoint(brick1.rect.bottomleft)
+                print(tr,tl,br,bl)
+
+                if (tr and tl) or (br and bl):
+                    print('hit bottom')
+                    angle = -angle
+                    brick1.health -= self.strength
+                    self.hit = not self.hit
+                if (tl and bl) or (tr and br):
+                    print('hit side')
+                    angle = math.pi - angle
+                    brick1.health -= self.strength
+                    self.hit = not self.hit
             elif self.hit:
                 self.hit = not self.hit
 
@@ -154,33 +168,34 @@ class Paddle(pygame.sprite.Sprite):
 
 class Brick(pygame.sprite.Sprite):
 
-    def __init__(self):
+    def __init__(self, coordinate):
         pygame.sprite.Sprite.__init__(self)
         self.image = load_png('basic_block.png')
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.health = 100
+        self.coordinate = coordinate
         self.state = "still"
         self.reinit()
 
     def reinit(self):
         self.state = "still"
-        self.rect.topright = self.area.topright
+        self.rect.topright = self.coordinate#self.area.topright
 
     def update(self):
         brick_bg = pygame.Surface((128, 64))
         brick_bg = brick_bg.convert()
         if self.health > 0:
-            # if self.health > 75:
-            #     brick_bg.fill((55,208,51))
-            # elif self.health > 50:
-            #     brick_bg.fill((165,208,66))
-            # elif self.health > 25:
-            #     brick_bg.fill((208,160,71))
-            # elif self.health > 0:
-            #     brick_bg.fill((208,66,36))
-            # screen.blit(brick_bg, self.rect)
+            if self.health > 75:
+                brick_bg.fill((55,208,51))
+            elif self.health > 50:
+                brick_bg.fill((165,208,66))
+            elif self.health > 25:
+                brick_bg.fill((208,160,71))
+            elif self.health > 0:
+                brick_bg.fill((208,66,36))
+            screen.blit(brick_bg, self.rect)
             bricksprite.draw(screen)
         else:
             brick_bg.fill((0, 0, 0))
@@ -206,13 +221,13 @@ def main():
     player1 = Paddle()
 
     # Initialize ball
+    global ball
     speed = 13
     rand = 0.1 * random.randint(5, 8)
     ball = Ball((0.47, speed))
 
     global brick1
-    brick1 = Brick()
-
+    brick1 = Brick((240,240))
 
     # Initialize sprites
     global bricksprite
@@ -241,16 +256,21 @@ def main():
                     player1.moveleft()
                 if event.key == pygame.K_RIGHT:
                     player1.moveright()
+                if event.key == pygame.K_SPACE:
+                    ball.state = 'moving'
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     player1.still()
+
 
         screen.blit(background, ball.rect, ball.rect)   # cover up ball
         screen.blit(background, player1.rect, player1.rect) # cover up paddle
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
-        ballsprite.update()
+        if ball.state == 'moving':
+            ballsprite.update()
+
         playersprites.update()
         bricksprite.update()
 

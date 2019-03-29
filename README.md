@@ -54,7 +54,7 @@ IF YOU AND YOUR PARTNER CHOOSE TO WORK AHEAD, PLEASE WORK TOGETHER, ANY CODE WHI
 * 100 points | Week 12 Milestones (graded on Week 13)
 * 100 points | Week 13 Milestones (graded on Week 14, as part of the presentation)
 * 100 points | Week 14 Presentation
-* 300 points | Final Project Submission (due during finals week [date TBD])
+* 300 points | Final Project Submission (due `4/26/2019 at 11:59 pm`)
 
 All weeks will count the same as a normal lab (100 points).
 The final presentation will also count as a normal lab grade.
@@ -194,14 +194,14 @@ Your instructor will ask additional questions regarding your implementation and 
 
 ## Rubric
 * 40 - Participation
-* 30 - Ball working correctly
+* 25 - Ball working correctly
   * 5 - Ball starts out on top of the paddle and is bounced upward.
     > You may also start the ball above the paddle and have it drop down (either implementation is acceptable.)
-  * 5 - Ball is deflected when it hits the paddle (Movement does not need to be perfect).
-  * 20 - Ball is deflected when it hits a brick (Movement does not need to be perfect).
-* 20 - Paddle Working correctly
+  * 10 - Ball is deflected when it hits a brick (Movement does not need to be perfect).
+  * 10 - Ball is deflected when it hits the paddle.
+  The ball should tend toward the left when hitting the left side of the paddle, and to the right when hitting the right.
+* 5 - Paddle Working correctly
   * 5 - Paddle does not leave the bounds of the screen.
-  * 15 - Paddle deflects the ball with an angle based on where the ball hits.
 * 30 - Brick working correctly
   * 15 - Bricks should have health that is decreased when a ball hits it.
   * 15 - Bricks should be destroyed when their health reaches 0.
@@ -210,74 +210,92 @@ Your instructor will ask additional questions regarding your implementation and 
 Now that we have created classes for each of the Breakout objects, it is time to get the game working.
 
 ## Game States
-One of the most important aspect to creating a real-time project is to give it various __states__.
-These states make up the core of a program and make it a __state machine__.
-Don't worry about the terminology, all a state machine does is model behaviors for a given state and map out the transition to other states.
+One of the most important aspects to creating a real-time project is to design it with various __[states](https://en.wikipedia.org/wiki/State_(computer_science))__ in mind.
+For our game, all a state means is that we have a past, a present, and a future that we need to be aware of.
+
+States all have a definition (what they do), and a transition (how they change over time).
+These series of states make up a __state diagram__.
+For any large project, your should define your state diagram by hand before implementing it in code (e.g. creating a whiteboard sketch, Microsoft Visio diagram, etc).
+
+For our project, the model will be provided to you, your job is to translate it into code.
 
 Let's create a simple model using Breakout.
-Classically, we have 3 primary states: a play state, a pause state, and a game over state.
-During the game state, the behavior of the program should allow it to take user input, process game changes, and display the changes back to the user.
-During the game over state, the game should sit idle and wait for a user to restart the game (classically, this would be an arcade machine waiting for a user to insert enough coins to play).
-During the pause state, the game should sit idle and wait for a user to un-pause the game.
 
+#### State Definitions:
+In Breakout, we have 3 primary states: a play state, a pause state, and a game over state.
+* During the game state, the behavior of the program should allow it to take user input, process game changes, and display the changes back to the user.
+* During the game over state, the game should sit idle and wait for a user to restart the game (classically, this would be an arcade machine waiting for a user to insert enough coins to play).
+  In our case, this is just the game waiting for the user to press the space bar.
+* During the pause state, the game should sit idle and wait for a user to un-pause the game.
+
+#### State Transitions
 Now that we have defined our states, we need to define our state transitions.
-We should have our game start in the game over state, since it is how the game will have ended previously.
-The Game over state should be what the game loads into upon initialization.
-The game over state is very simple to model: it transitions to the play state when and only when the user gives the input.
-If the game is terminated, the state will not change.
-The play state is a little bit more complex, since it involves multiple branching paths.
-The play state will transition into the pause state when the user pauses the game, and the play state will transition to the game over state when the user runs out of live or the user terminates the game manually.
-Finally, the pause state is very similar to the game over state since it transitions to the play state when a user un-pauses the game.
+* We should have our game start in the game over state, since it is how the game will have ended previously.
+  The Game over state should be what the game loads into upon initialization.
+* The game over state is very simple to model: it transitions to the play state when and only when the user gives the input.
+  * If the game is terminated, the state will not change.
+* The play state is a little bit more complex, since it involves multiple branching paths.
+  * The play state will transition into the pause state when the user pauses the game, and
+  * the play state will transition to the game over state when the user runs out of lives or the user terminates the game manually.
+* Finally, the pause state is very similar to the game over state since it transitions to the play state when a user un-pauses the game.
 
-Before you start writing code, you should first write this out as a state diagram.
-Because your game may be different than the given game, your diagram may differ than what was described above.
+![State Diagram](/docs/img/breakout_states.png)
+> Because your final game may be different than the given game, your diagram may eventually differ than what is described above.
 
 ## Implementing States
 The obvious follow up questions is __"How do I write this in code?"__
 There are many ways to implement state transitions.
 In a larger project, you would likely use objects to contain various behaviors and change the object pointers to transition states.
-In this project, it will be easier to use boolean states to control the transitions.
+In this project, it will be easier to use integer or boolean states to control the transitions.
 Below is a __pseudocode__ example.
 
 ```
 # NOTE: Escape is used to quit the game, space is used to start the game,
-# and return is used to pause
+# and return is used to pause.
+# Your code will vary!
 
-gameover = True
-paused = False
-exitgame = False
+GAME_OVER = 0
+PLAY      = 1
+PAUSED    = 2
+
+state     = GAME_OVER
+exitgame  = False
 
 while not exitgame:
+    # Exit the game
     if user_input() == ESC:
         exitgame = True
         continue
 
     # Game Over State
-    if gameover:
+    if state == GAME_OVER:
         show_text("Game Over")
         show_subtext("Press space to play.")
         if user_input() == SPACE:
-            gameover = False
+            state = PLAY
             continue
 
     # Paused State
-    elif paused:
+    elif state == PAUSED:
         show_text("Paused")
         if user_input() == RETURN:
-            paused = False
+            state = PLAY
     
     # Play State
     else:
         run_game()
         
         if lives <= 0:
-            gameover = True
+            state = GAME_OVER
             continue
         
         if user_input() == RETURN:
-            paused = True
+            state = PAUSED
             continue
 ```
+> If you are unfamiliar with a continue statement, it is a control statement (similar to a break or return).
+  A continue, however, does not break out of a loop, but instead goes to the top of a loop.
+  For example, the continues in the pseudocode would all immediately jump up to the `while not exitgame` loop.
 
 ## Debugging Movement
 In this lab you will start debugging the motion of the ball, and the collisions on bricks.
@@ -306,9 +324,23 @@ Your instructor will ask additional questions regarding your implementation and 
 
 ## Rubric
 * 40 - Participation
-* 20 - Working States in the Game
-* 20 - Deflection of the ball is fluid and fun to play
-* 20 - Game keeps track of score, lives, and level.
+* 25 - Working States in the Game
+  * 15 - Implemented a Game Over Screen
+    * 5 - Game Over screen is displayed when the game starts.
+    * 5 - Game Over screen transitions to the game upon user input.
+    * 5 - Game Over screen is displayed when the user runs out of lives
+  * 10 - Working pause menu
+    * 5 - Pause menu is triggered by user input. (Pause menu cannot be activated during the Game Over screen)
+    * 5 - Pause menu is terminated by user input.
+* 15 - Brick deflection is fluid and fun to play (i.e. not buggy)
+* 15 - Game keeps track of score, lives, and level.
+  * 3 - Score is increased when hitting bricks (or destroying them).
+    > I will leave this as a creative choice to you.
+  * 3 - Lives are decreased when the ball falls off the screen.
+  * 3 - Levels are increased when a user destroys the last block on the screen.
+  * 3 - New Bricks are generated when a user completes a level.
+    > __NOTE:__ An ideal game would also reset the ball at this point.
+  * 3 - Score, lives, and level are reset when it is game over.
 
 # Lab 12 - Binary File I/O
 One way that we will modernize this game is by allowing the user to save.
