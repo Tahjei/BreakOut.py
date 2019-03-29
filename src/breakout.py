@@ -23,6 +23,9 @@ import os
 import pygame
 from pygame.locals import *
 
+pygame.font.init()
+myfont = pygame.font.SysFont('Comic Sans MS', 30)
+
 
 
 def load_png(name):
@@ -59,7 +62,7 @@ class Ball(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.vector = vector
         self.hit = 0
-        self.strength = 0
+        self.strength = 10
         self.state = "still"
         self.reinit()
 
@@ -250,21 +253,27 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                print('Exit Game?')
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     player1.moveleft()
                 if event.key == pygame.K_RIGHT:
                     player1.moveright()
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE and ball.state == 'moving':
+                    ball.state = 'still'
+                elif event.key == pygame.K_SPACE and ball.state == 'still':
                     ball.state = 'moving'
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     player1.still()
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
 
 
         screen.blit(background, ball.rect, ball.rect)   # cover up ball
         screen.blit(background, player1.rect, player1.rect) # cover up paddle
+        textsurface = myfont.render('', False, (255, 255, 255))
+        screen.blit(textsurface, (0, 0))
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
