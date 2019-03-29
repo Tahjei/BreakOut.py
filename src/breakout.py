@@ -279,8 +279,7 @@ def main():
 
         if ball.state == 'moving':
             ballsprite.update()
-
-        playersprites.update()
+            playersprites.update()
         bricksprite.update()
 
         ballsprite.draw(screen) # draw updated ball
