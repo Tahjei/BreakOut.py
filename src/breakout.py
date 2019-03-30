@@ -23,9 +23,9 @@ import os
 import pygame
 from pygame.locals import *
 
+
 pygame.font.init()
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
-
 
 
 def load_png(name):
@@ -108,7 +108,7 @@ class Ball(pygame.sprite.Sprite):
                 br = not self.rect.collidepoint(brick1.rect.bottomright)
                 bl = not self.rect.collidepoint(brick1.rect.bottomleft)
                 print(tr,tl,br,bl)
-
+                player1.game_score += 1
                 if (tr and tl) or (br and bl):
                     print('hit bottom')
                     angle = -angle
@@ -133,6 +133,8 @@ class Paddle(pygame.sprite.Sprite):
 
     X = 0
     Y = 1
+
+    game_score = 0
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -209,6 +211,7 @@ def main():
     # Initialize screen
     pygame.init()
 
+
     global screen
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption('Tom\'s Pong: v' + str(VERSION))
@@ -254,6 +257,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('Exit Game?')
+                return
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     player1.moveleft()
@@ -269,10 +273,11 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
 
-
         screen.blit(background, ball.rect, ball.rect)   # cover up ball
         screen.blit(background, player1.rect, player1.rect) # cover up paddle
-        textsurface = myfont.render('', False, (255, 255, 255))
+        x = str(player1.game_score)
+        textsurface = myfont.render(x, False, (255, 255, 255))
+        screen.blit(background, (0, 0))
         screen.blit(textsurface, (0, 0))
 
         brick1.update()     # disappears if health <=0, stays otherwise
