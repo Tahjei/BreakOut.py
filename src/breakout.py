@@ -279,6 +279,7 @@ def main():
 
         x = str(player1.game_score)
         score = myfont.render(x, False, (255, 255, 255))
+        lives = myfont.render(u'\u2764\u2764\u2764', False, (255, 255, 255))
         screen.blit(background, (0, 0))
         screen.blit(score, (0, 0))
         # if player1.lives == 3:                    #Working on displaying lives in corner
