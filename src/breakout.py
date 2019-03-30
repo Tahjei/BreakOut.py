@@ -24,7 +24,7 @@ import pygame
 from pygame.locals import *
 
 
-pygame.font.init()
+pygame.font.init() #https://stackoverflow.com/questions/20546661/pygame-display-variable-on-display-window
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
 
 
@@ -135,6 +135,7 @@ class Paddle(pygame.sprite.Sprite):
     Y = 1
 
     game_score = 0
+    lives = 3
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -275,10 +276,16 @@ def main():
 
         screen.blit(background, ball.rect, ball.rect)   # cover up ball
         screen.blit(background, player1.rect, player1.rect) # cover up paddle
+
         x = str(player1.game_score)
         textsurface = myfont.render(x, False, (255, 255, 255))
         screen.blit(background, (0, 0))
         screen.blit(textsurface, (0, 0))
+        # if player1.lives == 3:                    #Working on displaying lives in corner
+        #     screen.blit(u'\u2764\u2764\u2764')
+        # elif player1.lives == 2:
+        #     pass
+
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
