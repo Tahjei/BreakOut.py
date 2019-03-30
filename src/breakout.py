@@ -278,14 +278,13 @@ def main():
         screen.blit(background, player1.rect, player1.rect) # cover up paddle
 
         x = str(player1.game_score)
-        textsurface = myfont.render(x, False, (255, 255, 255))
+        score = myfont.render(x, False, (255, 255, 255))
         screen.blit(background, (0, 0))
-        screen.blit(textsurface, (0, 0))
+        screen.blit(score, (0, 0))
         # if player1.lives == 3:                    #Working on displaying lives in corner
         #     screen.blit(u'\u2764\u2764\u2764')
         # elif player1.lives == 2:
         #     pass
-
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
