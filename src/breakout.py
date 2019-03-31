@@ -88,7 +88,7 @@ class Ball(pygame.sprite.Sprite):
                 angle = math.pi - angle
             if (bl and br):
                 self.reinit()#raise pygame.error("You lose!") #Right now just throws an error. Was looking into how to make a new
-                                                #window pop up with a button: Play again? Y/N. Still working on that.
+                player1.lives -= 1                                #window pop up with a button: Play again? Y/N. Still working on that.
                                                     #But the ball stops the game when it hits the bottom, so I think that fulfulls the requirement.
 
         else:
@@ -284,7 +284,17 @@ def main():
         screen.blit(background, (0, 0))
 
         screen.blit(score, (3, 440))
-        screen.blit(heart, (500, 445))
+        if player1.lives == 3:
+            screen.blit(heart, (530, 445))
+            screen.blit(heart, (565, 445))
+            screen.blit(heart, (600, 445))
+        elif player1.lives == 2:
+            screen.blit(heart, (565, 445))
+            screen.blit(heart, (600, 445))
+        elif player1.lives == 1:
+            screen.blit(heart, (600, 445))
+        else:
+            screen.blit(myfont.render('', False, (0, 0, 0)), (600, 445))
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
