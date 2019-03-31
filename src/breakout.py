@@ -88,6 +88,7 @@ class Ball(pygame.sprite.Sprite):
                 angle = math.pi - angle
             if (bl and br):
                 self.reinit()#raise pygame.error("You lose!") #Right now just throws an error. Was looking into how to make a new
+                player1.reinit()
                 player1.lives -= 1                                #window pop up with a button: Play again? Y/N. Still working on that.
                                                     #But the ball stops the game when it hits the bottom, so I think that fulfulls the requirement.
 
