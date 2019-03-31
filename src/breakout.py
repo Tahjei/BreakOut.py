@@ -280,11 +280,11 @@ def main():
 
         x = str(player1.game_score)
         score = myfont.render(x, False, (255, 255, 255))
-        heart = emoji.emojize(':heart:', use_aliases=True)    #♥.encode("utf8") \u2665
-        lives = myfont.render(heart * 3, False, (255, 255, 255))
+        heart = load_png("Heart.png")
         screen.blit(background, (0, 0))
+
         screen.blit(score, (3, 440))
-        screen.blit(lives, (500, 440))
+        screen.blit(heart, (500, 445))
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
