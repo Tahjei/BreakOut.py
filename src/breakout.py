@@ -6,7 +6,7 @@
 # Released under the GNU General Public License
 #
 ##############################################################
-#
+
 # Modified for educational purposes for the
 # CNU Department of Physics, Computer Science and Engineering
 #
@@ -22,6 +22,7 @@ import math
 import os
 import pygame
 from pygame.locals import *
+import emoji
 
 
 pygame.font.init() #https://stackoverflow.com/questions/20546661/pygame-display-variable-on-display-window
@@ -68,7 +69,7 @@ class Ball(pygame.sprite.Sprite):
 
     def reinit(self):
         self.state = "still"
-        self.rect.center = (self.area.centerx,440)
+        self.rect.center = (self.area.centerx, 440)
 
     def update(self):
 
@@ -279,13 +280,11 @@ def main():
 
         x = str(player1.game_score)
         score = myfont.render(x, False, (255, 255, 255))
-        lives = myfont.render(u'\u2764\u2764\u2764', False, (255, 255, 255))
+        heart = emoji.emojize(':heart:', use_aliases=True)    #♥.encode("utf8") \u2665
+        lives = myfont.render(heart * 3, False, (255, 255, 255))
         screen.blit(background, (0, 0))
-        screen.blit(score, (0, 0))
-        # if player1.lives == 3:                    #Working on displaying lives in corner
-        #     screen.blit(u'\u2764\u2764\u2764')
-        # elif player1.lives == 2:
-        #     pass
+        screen.blit(score, (3, 440))
+        screen.blit(lives, (500, 440))
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
