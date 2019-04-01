@@ -27,6 +27,7 @@ import emoji
 
 pygame.font.init() #https://stackoverflow.com/questions/20546661/pygame-display-variable-on-display-window
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
+end_font = pygame.font.SysFont('Comic Sans MS', 100)
 
 
 def load_png(name):
@@ -295,7 +296,10 @@ def main():
         elif player1.lives == 1:
             screen.blit(heart, (600, 445))
         else:
-            screen.blit(myfont.render('', False, (0, 0, 0)), (600, 445))
+            #while pygame.key.get_pressed() is False:
+            screen.fill((0, 0, 0))
+            end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
+            screen.blit(end_screen, (25, 100))
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
@@ -308,7 +312,6 @@ def main():
         playersprites.draw(screen)  # draw updated paddle
 
         pygame.display.flip()
-
 
 if __name__ == '__main__':
     main()
