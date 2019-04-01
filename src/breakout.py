@@ -174,6 +174,24 @@ class Paddle(pygame.sprite.Sprite):
         self.movepos = [0, 0]
         self.state = "still"
 
+    def game_end(self):
+        key = pygame.key.get_pressed()
+        screen.fill((0, 0, 0))
+        screen.blit(background, ball.rect, ball.rect)  # cover up ball
+        screen.blit(background, player1.rect, player1.rect)  # cover up paddle
+        end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
+        screen.blit(end_screen, (25, 100))
+        if key[pygame.K_q]:
+            print("quit")
+            pygame.quit()
+        if key[pygame.K_r]:
+            print('Restart')
+            player1.lives = 3
+            player1.game_score = 0
+            player1.reinit()
+            ball.reinit()
+            brick1.reinit()
+
 
 class Brick(pygame.sprite.Sprite):
 
@@ -296,10 +314,7 @@ def main():
         elif player1.lives == 1:
             screen.blit(heart, (600, 445))
         else:
-            #while pygame.key.get_pressed() is False:
-            screen.fill((0, 0, 0))
-            end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
-            screen.blit(end_screen, (25, 100))
+            player1.game_end()
 
         brick1.update()     # disappears if health <=0, stays otherwise
 
