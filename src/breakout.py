@@ -22,7 +22,6 @@ import math
 import os
 import pygame
 from pygame.locals import *
-import emoji
 
 
 pygame.font.init() #https://stackoverflow.com/questions/20546661/pygame-display-variable-on-display-window
@@ -176,11 +175,13 @@ class Paddle(pygame.sprite.Sprite):
 
     def game_end(self):
         key = pygame.key.get_pressed()
-        screen.fill((0, 0, 0))
-        screen.blit(background, ball.rect, ball.rect)  # cover up ball
-        screen.blit(background, player1.rect, player1.rect)  # cover up paddle
+        screen.blit(background, (0, 0))
         end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
         screen.blit(end_screen, (25, 100))
+        screen.blit(background, ball.rect, ball.rect)  # cover up ball
+        screen.blit(background, player1.rect, player1.rect)  # cover up paddle
+        pygame.display.flip()
+
         if key[pygame.K_q]:
             print("quit")
             pygame.quit()
@@ -316,6 +317,7 @@ def main():
         else:
             player1.game_end()
 
+
         brick1.update()     # disappears if health <=0, stays otherwise
 
         if ball.state == 'moving':
@@ -327,6 +329,7 @@ def main():
         playersprites.draw(screen)  # draw updated paddle
 
         pygame.display.flip()
+
 
 if __name__ == '__main__':
     main()
