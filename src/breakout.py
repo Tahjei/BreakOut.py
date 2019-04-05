@@ -259,13 +259,13 @@ def game_end():
     except:
         pass
     screen.blit(background, (0, 0))
-    end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
+    end_screen = load_png("gameover.png")
     end_txt = myfont.render("Press Space Bar to Play Again", False, (255, 255, 255))
-    end_score = myfont.render("SCORE: " + str(player1.game_score), False, (255, 255, 255))
-    end_level = myfont.render("LEVEL: " + str(player1.level), False, (255, 255, 255))
+    end_score = myfont.render("SCORE: " + str(player1.game_score), False, (255, 255, 100))
+    end_level = myfont.render("LEVEL: " + str(player1.level), False, (255, 255, 100))
     screen.blit(end_screen, (25, 125))
-    screen.blit(end_score, (265, 265))
-    screen.blit(end_level, (276, 300))
+    screen.blit(end_score, (265, 300))
+    screen.blit(end_level, (276, 345))
     screen.blit(end_txt, (120, 400))
     # screen.blit(background, ball.rect, ball.rect)  # cover up ball
     # screen.blit(background, player1.rect, player1.rect)  # cover up paddle
@@ -276,7 +276,7 @@ def startup():
     global play
     play = False
     screen.blit(background, (0, 0))
-    welcome_screen = end_font.render("BREAKOUT", False, (255, 255, 255))
+    welcome_screen = load_png("breakoutstart.png")
     start_text = myfont.render("Press Space Bar to Start Game", False, (255, 255, 255))
     screen.blit(welcome_screen, (45, 125))
     screen.blit(start_text, (100, 300))
