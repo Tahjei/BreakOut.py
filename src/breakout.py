@@ -20,6 +20,7 @@ import math
 import os
 import pygame
 from pygame.locals import *
+import struct
 
 
 pygame.font.init() #https://stackoverflow.com/questions/20546661/pygame-display-variable-on-display-window
@@ -211,6 +212,7 @@ class Brick(pygame.sprite.Sprite):
         self.coordinate = coordinate
         self.state = "still"
         self.reinit()
+        self.power = False
 
     def reinit(self):
         self.state = "still"
@@ -372,8 +374,19 @@ def main():
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    # print('Exit Game?')
+
+                    with open(os.path.join("breakout_save.dat"), "wb") as file:
+                        ba = bytearray()
+                        ba.extend(struct.pack(">6id???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                                    ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y))
+
+                        for brick in bricksprite:
+                            ba.extend(struct.pack('>3i?', brick.coordinate[0], brick.coordinate[1], brick.health, brick.power))
+
+                        file.write(ba)
+
                     run = False
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         player1.moveleft()
