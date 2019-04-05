@@ -254,6 +254,10 @@ play = False
 start_bool = True
 
 def game_end():
+    try:
+        os.remove("breakout_save.dat")
+    except:
+        pass
     screen.blit(background, (0, 0))
     end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
     end_txt = myfont.render("Press Space Bar to Play Again", False, (255, 255, 255))
@@ -500,6 +504,15 @@ def main():
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    with open(os.path.join("breakout_save.dat"), "wb") as file:
+                        ba = bytearray()
+                        ba.extend(struct.pack(">6id???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                                    ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y))
+
+                        for brick in bricksprite:
+                            ba.extend(struct.pack('>3i?', brick.coordinate[0], brick.coordinate[1], brick.health, brick.power))
+
+                        file.write(ba)
                     run = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
