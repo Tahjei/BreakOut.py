@@ -202,17 +202,17 @@ class Paddle(pygame.sprite.Sprite):
 
 class Brick(pygame.sprite.Sprite):
 
-    def __init__(self, coordinate):
+    def __init__(self, coordinate, health=100, power=False):
         pygame.sprite.Sprite.__init__(self)
         self.image = load_png('block.png')
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        self.health = 100
+        self.health = health
         self.coordinate = coordinate
         self.state = "still"
         self.reinit()
-        self.power = False
+        self.power = power
 
     def reinit(self):
         self.state = "still"
@@ -291,12 +291,34 @@ def pause():
     screen.blit(pause_txt, (120, 300))
 
 def start_game():
-    print('start')
-    player1.lives = 3
-    player1.game_score = 0
-    player1.reinit()
-    ball.reinit()
-    set_bricks()
+    try:
+        with open("breakout_save.dat", "rb") as file:
+            ba = bytearray(file.read(43))
+            player1.game_score, player1.level, player1.lives, ball.rect[0], ball.rect[1], z, theta, run, play, pause, player1.X, player1.Y = struct.unpack(">6id???ii", ba)
+            ball.vector = (theta, z)
+            print("Unpack first 42 bytes")
+            file.seek(43)
+
+            brick_data = file.read()
+            #len_brick_data = len(brick_data)
+            chunk_size = struct.calcsize(">3i?")
+            for i in range(len(brick_data)//chunk_size):
+                brickx, bricky, health, pwr = struct.unpack(">3i?", brick_data[i * chunk_size:(i + 1) * chunk_size])
+                brick = Brick((brickx,bricky), health, pwr)
+                print("Unpack bricks")
+                if i == 0:
+                    global bricksprite
+                    bricksprite = pygame.sprite.RenderPlain(brick)
+                else:
+                    bricksprite.add(brick)
+    except Exception as e:
+        print(e)
+        print('start')
+        player1.lives = 3
+        player1.game_score = 0
+        player1.reinit()
+        ball.reinit()
+        set_bricks()
 
 #################################################################################################################
 
