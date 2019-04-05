@@ -88,10 +88,9 @@ class Ball(pygame.sprite.Sprite):
             if (tl and bl) or (tr and br):
                 angle = math.pi - angle
             if (bl and br):
-                self.reinit()#raise pygame.error("You lose!") #Right now just throws an error. Was looking into how to make a new
+                self.reinit()
                 player1.reinit()
-                player1.lives -= 1                                #window pop up with a button: Play again? Y/N. Still working on that.
-                                                     #But the ball stops the game when it hits the bottom, so I think that fulfulls the requirement.
+                player1.lives -= 1
 
         for sprite in bricksprite:
             if self.rect.colliderect(sprite.rect) and not self.hit and sprite.health > 0:
@@ -151,6 +150,7 @@ class Ball(pygame.sprite.Sprite):
 
         self.vector = (angle, z)
 
+
 class Paddle(pygame.sprite.Sprite):
     """Movable tennis 'bat' with which one hits the ball
     Returns: bat object
@@ -197,6 +197,7 @@ class Paddle(pygame.sprite.Sprite):
     def still(self):
         self.movepos = [0, 0]
         self.state = "still"
+
 
 class Brick(pygame.sprite.Sprite):
 
@@ -254,8 +255,12 @@ def game_end():
     screen.blit(background, (0, 0))
     end_screen = end_font.render("GAME OVER", False, (255, 255, 255))
     end_txt = myfont.render("Press Space Bar to Play Again", False, (255, 255, 255))
+    end_score = myfont.render("SCORE: " + str(player1.game_score), False, (255, 255, 255))
+    end_level = myfont.render("LEVEL: " + str(player1.level), False, (255, 255, 255))
     screen.blit(end_screen, (25, 125))
-    screen.blit(end_txt, (120, 300))
+    screen.blit(end_score, (265, 265))
+    screen.blit(end_level, (270, 300))
+    screen.blit(end_txt, (120, 400))
     # screen.blit(background, ball.rect, ball.rect)  # cover up ball
     # screen.blit(background, player1.rect, player1.rect)  # cover up paddle
     # pygame.display.flip()
