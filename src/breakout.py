@@ -259,7 +259,7 @@ def game_end():
     end_level = myfont.render("LEVEL: " + str(player1.level), False, (255, 255, 255))
     screen.blit(end_screen, (25, 125))
     screen.blit(end_score, (265, 265))
-    screen.blit(end_level, (270, 300))
+    screen.blit(end_level, (276, 300))
     screen.blit(end_txt, (120, 400))
     # screen.blit(background, ball.rect, ball.rect)  # cover up ball
     # screen.blit(background, player1.rect, player1.rect)  # cover up paddle
