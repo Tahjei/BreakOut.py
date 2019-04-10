@@ -28,6 +28,15 @@ myfont = pygame.font.SysFont('Comic Sans MS', 30)
 small_font = pygame.font.SysFont('Comic Sans MS', 20)
 end_font = pygame.font.SysFont('Comic Sans MS', 100)
 
+############################################################
+#                       BUGS                               #
+#The ball keeps the same angle when transitioning between levels.
+#If the ball is going down when the level ends, it will be going down when the next level begins
+#Add a codition that prevents the ball from being too horizontally moving
+#The ball sometimes gets stuck in the paddle
+#The motion can be completely horizontal
+#When the ball is caught between the brick and the top of the screen sometimes this results in death
+############################################################
 
 def load_png(name):
     """ Load image and return image object"""
@@ -84,14 +93,22 @@ class Ball(pygame.sprite.Sprite):
             tr = not self.area.collidepoint(newpos.topright)
             bl = not self.area.collidepoint(newpos.bottomleft)
             br = not self.area.collidepoint(newpos.bottomright)
-            if (tr and tl) or (br and bl):
-                angle = -angle
-            if (tl and bl) or (tr and br):
-                angle = math.pi - angle
+            # if (tr and tl) or (br and bl):
+            #     angle = -angle
+            # elif (tr and br) or (tl and bl):
+            #     angle = math.pi - angle
+            # if (bl and br):
+            #     self.reinit()
+            #     player1.reinit()
+            #     player1.lives -= 1
             if (bl and br):
                 self.reinit()
                 player1.reinit()
                 player1.lives -= 1
+            elif (tr and br) or (tl and bl):
+                angle = math.pi - angle
+            else:
+                angle = -angle
 
         for sprite in bricksprite:
             if self.rect.colliderect(sprite.rect) and not self.hit and sprite.health > 0:
@@ -115,7 +132,7 @@ class Ball(pygame.sprite.Sprite):
                     self.hit = not self.hit
                 elif tl or bl or br or tr:
                     print('hit corner')
-                    angle = angle + math.pi + 0.05
+                    angle = angle + math.pi + .05
                     sprite.health -= self.strength
                     player1.game_score += 1
                     self.hit = not self.hit
@@ -347,6 +364,9 @@ def main():
 
     # Initialize ball
     global ball
+
+    #changing the speed here does nothing
+    #the speed of the ball
     speed = 13
     rand = 0.1 * random.randint(5, 8)
     ball = Ball((0.47, speed))
@@ -368,7 +388,7 @@ def main():
 
 
 ################################################################################################################
-
+#we should add a condition that makes the vector of the ball reset after the level has gone up or the game restarts
     run = True
     global play
     global start_bool
@@ -436,7 +456,7 @@ def main():
                         player1.still()
 
             screen.blit(background, ball.rect, ball.rect)   # cover up ball
-            screen.blit(background, player1.rect, player1.rect) # cover up paddle
+            screen.blit(background, player1.rect, player1.rect)  # cover up paddle
 
             x = 'Score: ' + str(player1.game_score)
             score = small_font.render(x, False, (255, 255, 255))
@@ -458,7 +478,7 @@ def main():
 
             bricksprite.update()
 
-            ballsprite.draw(screen) # draw updated ball
+            ballsprite.draw(screen)  # draw updated ball
             playersprites.draw(screen)  # draw updated paddle
 
             if not bricksprite:
@@ -478,7 +498,7 @@ def main():
                 if player1.lives >= 10:
                     screen.blit(lives, (275, 5))
                 else:
-                    screen.blit(lives,(285, 5))
+                    screen.blit(lives, (285, 5))
                 screen.blit(heart, (325, 10))
             else:
                 play = False
