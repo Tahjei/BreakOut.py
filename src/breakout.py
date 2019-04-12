@@ -65,6 +65,8 @@ class Ball(pygame.sprite.Sprite):
     Functions: update, calcnewpos
     Attributes: area, vector"""
 
+    speed = 10.25
+
     def __init__(self, vector):
         pygame.sprite.Sprite.__init__(self)
         self.image = load_png('green_ball.png')
@@ -74,7 +76,6 @@ class Ball(pygame.sprite.Sprite):
         self.vector = vector
         self.hit = 0
         self.strength = 100
-        self.speed = 10.25
         self.state = "still"
         self.color_count = 0
         self.reinit()
@@ -117,7 +118,11 @@ class Ball(pygame.sprite.Sprite):
                 self.reinit()
                 player1.reinit()
                 player1.lives -= 1
-            elif (tr and br) or (tl and bl):
+            elif tr and tl:
+                angle = -angle
+            elif tl and bl:
+                angle = math.pi - angle
+            elif tr and br:
                 angle = math.pi - angle
             else:
                 angle = -angle
@@ -144,7 +149,7 @@ class Ball(pygame.sprite.Sprite):
                     self.hit = not self.hit
                 elif tl or bl or br or tr:
                     print('hit corner')
-                    angle = angle + math.pi + .05
+                    angle = angle + math.pi
                     sprite.health -= self.strength
                     player1.game_score += 1
                     self.hit = not self.hit
@@ -178,7 +183,7 @@ class Ball(pygame.sprite.Sprite):
             elif self.hit:
                 self.hit = not self.hit
 
-        self.vector = (angle, self.speed)
+        self.vector = (angle, Ball.speed)
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -200,7 +205,7 @@ class Paddle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        self.speed = 10
+        self.speed = 10.0
         self.state = "still"
         self.reinit()
 
@@ -233,7 +238,11 @@ class Brick(pygame.sprite.Sprite):
 
     def __init__(self, coordinate, health=100, power=False):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_png('block.png')
+        self.power = power
+        if self.power:
+            self.image = load_png('pwr_brick.png')
+        else:
+            self.image = load_png('block.png')
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
@@ -241,7 +250,7 @@ class Brick(pygame.sprite.Sprite):
         self.coordinate = coordinate
         self.state = "still"
         self.reinit()
-        self.power = power
+
 
     def reinit(self):
         self.state = "still"
@@ -273,7 +282,12 @@ def set_bricks():
 
     for i in range(0,626,110):
         for j in range(50,151,45):
-            brick = Brick((i,j))
+            if random.randint(0,10) == 3:
+                brick = Brick((i, j), 100, True)
+                # brick.image = load_png('pwr_brick.png')
+            else:
+                brick = Brick((i, j), 100, False)
+
             if i == 0 and j == 50:
                 bricksprite = pygame.sprite.RenderPlain(brick)
             else:
@@ -326,11 +340,12 @@ def pause():
 def start_game():
     try:
         with open("breakout_save.dat", "rb") as file:
-            ba = bytearray(file.read(struct.calcsize(">5idd???ii")))
-            player1.game_score, player1.level, player1.lives, ball.rect[0], ball.rect[1], z, theta, run, play, pause, player1.X, player1.Y = struct.unpack(">5idd???ii", ba)
+            ba = bytearray(file.read(struct.calcsize(">5idd???iidd")))
+            player1.game_score, player1.level, player1.lives, ball.rect[0], ball.rect[1], z, theta, run, play, pause,\
+            player1.X, player1.Y, player1.speed, Ball.speed = struct.unpack(">5idd???iidd", ba)
             ball.vector = (theta, z)
-            print("Unpack first 42 bytes")
-            file.seek(struct.calcsize(">5idd???ii"))
+            print("Unpack first {} bytes".format(struct.calcsize('>5idd???iidd')))
+            file.seek(struct.calcsize(">5idd???iidd"))
             brick_data = file.read()
             #len_brick_data = len(brick_data)
             chunk_size = struct.calcsize(">3i?")
@@ -347,7 +362,10 @@ def start_game():
         print(e)
         print('start')
         player1.lives = 3
+        player1.level = 1
         player1.game_score = 0
+        Ball.speed = 10.25
+        player1.speed = 10.0
         player1.reinit()
         ball.reinit()
         set_bricks()
@@ -379,7 +397,7 @@ def main():
     #changing the speed here does nothing
     #the speed of the ball
     rand = 0.1 * random.randint(5, 8)
-    ball = Ball((0.47, 10.25))
+    ball = Ball((0.47, Ball.speed))
     # Initialize sprites
     global ballsprite
 
@@ -432,8 +450,9 @@ def main():
 
                     with open(os.path.join("breakout_save.dat"), "wb") as file:
                         ba = bytearray()
-                        ba.extend(struct.pack(">5idd???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
-                                    ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y))
+                        ba.extend(struct.pack(">5idd???iidd", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                                    ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y,
+                                              player1.speed, Ball.speed))
 
                         for brick in bricksprite:
                             ba.extend(struct.pack('>3i?', brick.coordinate[0], brick.coordinate[1], brick.health, brick.power))
@@ -492,12 +511,14 @@ def main():
 
             if not bricksprite:
                 set_bricks()
-                ball.speed += 25.0
+                Ball.speed += 1.0
+                player1.speed += .3
                 ball.reinit()
                 player1.reinit()
                 player1.lives += 1
                 player1.level += 1
 
+            # player1.lives = 4
             if 0 < player1.lives < 4:
                 x = 340
                 for i in range(player1.lives):
@@ -536,8 +557,9 @@ def main():
                 if event.type == pygame.QUIT:
                     with open(os.path.join("breakout_save.dat"), "wb") as file:
                         ba = bytearray()
-                        ba.extend(struct.pack(">5idd???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
-                                    ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y))
+                        ba.extend(struct.pack(">5idd???iidd", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                                    ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y,
+                                              player1.speed, Ball.speed))
 
                         for brick in bricksprite:
                             ba.extend(struct.pack('>3i?', brick.coordinate[0], brick.coordinate[1], brick.health, brick.power))
