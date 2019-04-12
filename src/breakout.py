@@ -274,6 +274,8 @@ class Brick(pygame.sprite.Sprite):
             self.kill()
             brick_bg.fill((0, 0, 0))
             screen.blit(brick_bg, self.rect)
+            if self.power:
+                # return
 
 ###################################################################################################################
 
