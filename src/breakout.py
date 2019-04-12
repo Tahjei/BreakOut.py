@@ -73,7 +73,8 @@ class Ball(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.vector = vector
         self.hit = 0
-        self.strength = 25
+        self.strength = 100
+        self.speed = 10.25
         self.state = "still"
         self.color_count = 0
         self.reinit()
@@ -97,7 +98,7 @@ class Ball(pygame.sprite.Sprite):
         newpos = calcnewpos(self.rect, self.vector)
 
         self.rect = newpos
-        (angle, z) = self.vector
+        (angle, self.speed) = self.vector
 
         if not self.area.contains(newpos):
             tl = not self.area.collidepoint(newpos.topleft)
@@ -177,7 +178,7 @@ class Ball(pygame.sprite.Sprite):
             elif self.hit:
                 self.hit = not self.hit
 
-        self.vector = (angle, z)
+        self.vector = (angle, self.speed)
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -330,7 +331,6 @@ def start_game():
             ball.vector = (theta, z)
             print("Unpack first 42 bytes")
             file.seek(struct.calcsize(">5idd???ii"))
-
             brick_data = file.read()
             #len_brick_data = len(brick_data)
             chunk_size = struct.calcsize(">3i?")
@@ -378,10 +378,8 @@ def main():
 
     #changing the speed here does nothing
     #the speed of the ball
-    speed = 10.25
     rand = 0.1 * random.randint(5, 8)
-    ball = Ball((0.47, speed))
-
+    ball = Ball((0.47, 10.25))
     # Initialize sprites
     global ballsprite
 
@@ -494,6 +492,7 @@ def main():
 
             if not bricksprite:
                 set_bricks()
+                ball.speed += 25.0
                 ball.reinit()
                 player1.reinit()
                 player1.lives += 1
