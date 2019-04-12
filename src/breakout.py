@@ -67,7 +67,7 @@ class Ball(pygame.sprite.Sprite):
 
     def __init__(self, vector):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_png('ball.png')
+        self.image = load_png('green_ball.png')
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
@@ -75,6 +75,7 @@ class Ball(pygame.sprite.Sprite):
         self.hit = 0
         self.strength = 25
         self.state = "still"
+        self.color_count = 0
         self.reinit()
 
     def reinit(self):
@@ -82,6 +83,16 @@ class Ball(pygame.sprite.Sprite):
         self.rect.center = (self.area.centerx, 440)
 
     def update(self):
+
+        self.color_count += 1
+        color_rate = 10
+        colors = ['red_ball.png', 'orange_ball.png', 'yellow_ball.png', 'green_ball.png', 'blue_ball.png',
+                  'indigo_ball.png', 'violet_ball.png']
+
+        if self.color_count >= color_rate * len(colors):
+            self.color_count = 0
+
+        self.image = load_png(colors[self.color_count // color_rate])
 
         newpos = calcnewpos(self.rect, self.vector)
 
@@ -314,11 +325,11 @@ def pause():
 def start_game():
     try:
         with open("breakout_save.dat", "rb") as file:
-            ba = bytearray(file.read(43))
-            player1.game_score, player1.level, player1.lives, ball.rect[0], ball.rect[1], z, theta, run, play, pause, player1.X, player1.Y = struct.unpack(">6id???ii", ba)
+            ba = bytearray(file.read(struct.calcsize(">5idd???ii")))
+            player1.game_score, player1.level, player1.lives, ball.rect[0], ball.rect[1], z, theta, run, play, pause, player1.X, player1.Y = struct.unpack(">5idd???ii", ba)
             ball.vector = (theta, z)
             print("Unpack first 42 bytes")
-            file.seek(43)
+            file.seek(struct.calcsize(">5idd???ii"))
 
             brick_data = file.read()
             #len_brick_data = len(brick_data)
@@ -367,7 +378,7 @@ def main():
 
     #changing the speed here does nothing
     #the speed of the ball
-    speed = 13
+    speed = 10.25
     rand = 0.1 * random.randint(5, 8)
     ball = Ball((0.47, speed))
 
@@ -423,7 +434,7 @@ def main():
 
                     with open(os.path.join("breakout_save.dat"), "wb") as file:
                         ba = bytearray()
-                        ba.extend(struct.pack(">6id???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                        ba.extend(struct.pack(">5idd???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
                                     ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y))
 
                         for brick in bricksprite:
@@ -526,7 +537,7 @@ def main():
                 if event.type == pygame.QUIT:
                     with open(os.path.join("breakout_save.dat"), "wb") as file:
                         ba = bytearray()
-                        ba.extend(struct.pack(">6id???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                        ba.extend(struct.pack(">5idd???ii", player1.game_score, player1.level, player1.lives, ball.rect[0],
                                     ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y))
 
                         for brick in bricksprite:
