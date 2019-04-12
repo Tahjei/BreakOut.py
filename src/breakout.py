@@ -397,7 +397,7 @@ def main():
     #changing the speed here does nothing
     #the speed of the ball
     rand = 0.1 * random.randint(5, 8)
-    ball = Ball((0.47, Ball.speed))
+    ball = Ball((math.pi/4, Ball.speed))
     # Initialize sprites
     global ballsprite
 
