@@ -75,7 +75,8 @@ class Ball(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.vector = vector
         self.hit = 0
-        self.strength = 100
+        self.base_strength = 25
+        self.strength = self.base_strength
         self.state = "still"
         self.color_count = 0
         self.reinit()
@@ -87,14 +88,17 @@ class Ball(pygame.sprite.Sprite):
     def update(self):
 
         self.color_count += 1
-        color_rate = 10
+        color_rate = 3
         colors = ['red_ball.png', 'orange_ball.png', 'yellow_ball.png', 'green_ball.png', 'blue_ball.png',
                   'indigo_ball.png', 'violet_ball.png']
 
         if self.color_count >= color_rate * len(colors):
             self.color_count = 0
 
-        self.image = load_png(colors[self.color_count // color_rate])
+        if Paddle.fireball_timer > 0:
+            self.image = load_png('new_fireball.png')
+        else:
+            self.image = load_png(colors[self.color_count // color_rate])
 
         newpos = calcnewpos(self.rect, self.vector)
 
@@ -102,6 +106,7 @@ class Ball(pygame.sprite.Sprite):
         (angle, self.speed) = self.vector
 
         if not self.area.contains(newpos):
+
             tl = not self.area.collidepoint(newpos.topleft)
             tr = not self.area.collidepoint(newpos.topright)
             bl = not self.area.collidepoint(newpos.bottomleft)
@@ -114,18 +119,26 @@ class Ball(pygame.sprite.Sprite):
             #     self.reinit()
             #     player1.reinit()
             #     player1.lives -= 1
-            if (bl and br):
+            if bl and br and not self.hit:   # bottom
                 self.reinit()
                 player1.reinit()
                 player1.lives -= 1
-            elif tr and tl:
+                self.hit = not self.hit
+            elif tr and tl and not self.hit:     # top
                 angle = -angle
-            elif tl and bl:
+                self.hit = not self.hit
+            elif tl and bl and not self.hit:     # left
                 angle = math.pi - angle
-            elif tr and br:
+                self.hit = not self.hit
+            elif tr and br and not self.hit:     # right
                 angle = math.pi - angle
+                self.hit = not self.hit
+            elif not self.hit:
+                angle = math.pi + angle
+                self.hit = not self.hit
             else:
-                angle = -angle
+                self.hit = not self.hit
+
 
         for sprite in bricksprite:
             if self.rect.colliderect(sprite.rect) and not self.hit and sprite.health > 0:
@@ -134,23 +147,34 @@ class Ball(pygame.sprite.Sprite):
                 tl = sprite.rect.collidepoint(newpos.topleft)
                 br = sprite.rect.collidepoint(newpos.bottomright)
                 bl = sprite.rect.collidepoint(newpos.bottomleft)
+                laser = Paddle.fireball_timer > 0
+
                 print(tr, tl, br, bl)
                 if (tr and tl) or (br and bl):
                     print('hit bottom')
-                    angle = -angle
-                    sprite.health -= self.strength
+                    if laser:
+                        sprite.health = 0
+                    else:
+                        angle = -angle
+                        sprite.health -= self.strength
                     player1.game_score += 1
                     self.hit = not self.hit
                 elif (tl and bl) or (tr and br):
                     print('hit side')
-                    angle = math.pi - angle
-                    sprite.health -= self.strength
+                    if laser:
+                        sprite.health = 0
+                    else:
+                        angle = math.pi - angle
+                        sprite.health -= self.strength
                     player1.game_score += 1
                     self.hit = not self.hit
                 elif tl or bl or br or tr:
                     print('hit corner')
-                    angle = angle + math.pi
-                    sprite.health -= self.strength
+                    if laser:
+                        sprite.health = 0
+                    else:
+                        angle = angle + math.pi + (random.randint(1,3) * 0.01)
+                        sprite.health -= self.strength
                     player1.game_score += 1
                     self.hit = not self.hit
 
@@ -195,6 +219,10 @@ class Paddle(pygame.sprite.Sprite):
     X = 0
     Y = 1
 
+    ball_strength_timer = 0
+    paddle_size_timer = 0
+    fireball_timer = 0
+
     game_score = 0
     level = 1
     lives = 3
@@ -205,7 +233,7 @@ class Paddle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        self.speed = 10.0
+        self.speed = 13.0
         self.state = "still"
         self.reinit()
 
@@ -274,8 +302,37 @@ class Brick(pygame.sprite.Sprite):
             self.kill()
             brick_bg.fill((0, 0, 0))
             screen.blit(brick_bg, self.rect)
+
             if self.power:
-                # return
+                power_up_list = ['Fire Ball', 'Ball Strength', 'Larger Paddle', 'Extra Life']
+                random.shuffle(power_up_list)
+
+                if power_up_list[0] == 'Ball Strength':
+                    ball.strength = 100
+                    if Paddle.ball_strength_timer < 0:
+                        Paddle.ball_strength_timer = 300
+                    else:
+                        Paddle.ball_strength_timer += 300
+
+                elif power_up_list[0] == 'Larger Paddle':
+                    if Paddle.paddle_size_timer < 0:
+                        Paddle.paddle_size_timer = 300
+                    else:
+                        Paddle.paddle_size_timer += 300
+
+                elif power_up_list[0] == 'Extra Life':
+                    player1.lives += 1
+
+                elif power_up_list[0] == 'Fire Ball':
+                    if Paddle.fireball_timer < 0:
+                        Paddle.fireball_timer = 150
+                    else:
+                        Paddle.fireball_timer += 150
+
+
+
+
+
 
 ###################################################################################################################
 
@@ -284,7 +341,7 @@ def set_bricks():
 
     for i in range(0,626,110):
         for j in range(50,151,45):
-            if random.randint(0,10) == 3:
+            if random.randint(0,9) == 1:
                 brick = Brick((i, j), 100, True)
                 # brick.image = load_png('pwr_brick.png')
             else:
@@ -342,12 +399,15 @@ def pause():
 def start_game():
     try:
         with open("breakout_save.dat", "rb") as file:
-            ba = bytearray(file.read(struct.calcsize(">5idd???iidd")))
+            ba = bytearray(file.read(struct.calcsize(">5idd???iiddiii")))
+
             player1.game_score, player1.level, player1.lives, ball.rect[0], ball.rect[1], z, theta, run, play, pause,\
-            player1.X, player1.Y, player1.speed, Ball.speed = struct.unpack(">5idd???iidd", ba)
+            player1.X, player1.Y, player1.speed, Ball.speed, Paddle.ball_strength_timer, Paddle.paddle_size_timer,\
+            Paddle.fireball_timer = struct.unpack(">5idd???iiddiii", ba)
+
             ball.vector = (theta, z)
             print("Unpack first {} bytes".format(struct.calcsize('>5idd???iidd')))
-            file.seek(struct.calcsize(">5idd???iidd"))
+            file.seek(struct.calcsize(">5idd???iiddiii"))
             brick_data = file.read()
             #len_brick_data = len(brick_data)
             chunk_size = struct.calcsize(">3i?")
@@ -366,8 +426,11 @@ def start_game():
         player1.lives = 3
         player1.level = 1
         player1.game_score = 0
+        Paddle.fireball_timer = 0
+        Paddle.paddle_size_timer = 0
+        Paddle.ball_strength_timer = 0
         Ball.speed = 10.25
-        player1.speed = 10.0
+        player1.speed = 13.0
         player1.reinit()
         ball.reinit()
         set_bricks()
@@ -452,9 +515,10 @@ def main():
 
                     with open(os.path.join("breakout_save.dat"), "wb") as file:
                         ba = bytearray()
-                        ba.extend(struct.pack(">5idd???iidd", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                        ba.extend(struct.pack(">5idd???iiddiii", player1.game_score, player1.level, player1.lives, ball.rect[0],
                                     ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y,
-                                              player1.speed, Ball.speed))
+                                              player1.speed, Ball.speed, Paddle.ball_strength_timer, Paddle.paddle_size_timer,
+                                              Paddle.fireball_timer))
 
                         for brick in bricksprite:
                             ba.extend(struct.pack('>3i?', brick.coordinate[0], brick.coordinate[1], brick.health, brick.power))
@@ -500,7 +564,28 @@ def main():
                 txt = myfont.render('Press Space Bar to Launch Ball', False, (255, 255, 255))
                 screen.blit(txt, (100, 300))
 
-            # brick1.update()     # disappears if health <=0, stays otherwise
+        ########################## POWER UPS #########################################
+
+            Paddle.ball_strength_timer -= 1
+            if Paddle.ball_strength_timer > 0:
+                screen.blit(load_png('ball_strength_pwr.png'), (220, 8))
+            else:
+                ball.strength = ball.base_strength
+
+            Paddle.paddle_size_timer -= 1
+            if Paddle.paddle_size_timer > 0:
+                screen.blit(load_png('paddle_size_pwr.png'), (170, 8))
+                player1.image = load_png('long_paddle.png')
+            else:
+                player1.image = load_png('paddle.png')
+
+            Paddle.fireball_timer -= 1
+            if Paddle.fireball_timer > 0:
+                screen.blit(load_png('fireball_pwr.png'), (120, 8))
+
+
+        ################################################################################
+
 
             if ball.state == 'moving':
                 ballsprite.update()
@@ -513,14 +598,15 @@ def main():
 
             if not bricksprite:
                 set_bricks()
-                Ball.speed += 1.0
+                if Ball.speed < 19:
+                    Ball.speed += 1.0
                 player1.speed += .3
                 ball.reinit()
                 player1.reinit()
                 player1.lives += 1
                 player1.level += 1
 
-            # player1.lives = 4
+
             if 0 < player1.lives < 4:
                 x = 340
                 for i in range(player1.lives):
@@ -559,9 +645,10 @@ def main():
                 if event.type == pygame.QUIT:
                     with open(os.path.join("breakout_save.dat"), "wb") as file:
                         ba = bytearray()
-                        ba.extend(struct.pack(">5idd???iidd", player1.game_score, player1.level, player1.lives, ball.rect[0],
+                        ba.extend(struct.pack(">5idd???iiddiii", player1.game_score, player1.level, player1.lives, ball.rect[0],
                                     ball.rect[1], ball.vector[1], ball.vector[0], run, play, pause, player1.X, player1.Y,
-                                              player1.speed, Ball.speed))
+                                              player1.speed, Ball.speed, Paddle.ball_strength_timer, Paddle.paddle_size_timer,
+                                              Paddle.fireball_timer))
 
                         for brick in bricksprite:
                             ba.extend(struct.pack('>3i?', brick.coordinate[0], brick.coordinate[1], brick.health, brick.power))
