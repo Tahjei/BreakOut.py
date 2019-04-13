@@ -21,7 +21,10 @@ import os
 import pygame
 from pygame.locals import *
 import struct
+import pygame.mixer
 
+# pygame.mixer.pre_init_(44100, 16, 2,4096)
+# pygame.init()
 
 pygame.font.init() #https://stackoverflow.com/questions/20546661/pygame-display-variable-on-display-window
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
@@ -123,6 +126,8 @@ class Ball(pygame.sprite.Sprite):
                 self.reinit()
                 player1.reinit()
                 player1.lives -= 1
+                pygame.mixer.music.load('sound/breakout ball death.wav')
+                pygame.mixer.music.play(1)
                 self.hit = not self.hit
             elif tr and tl and not self.hit:     # top
                 angle = -angle
@@ -158,6 +163,8 @@ class Ball(pygame.sprite.Sprite):
                         angle = -angle
                         sprite.health -= self.strength
                     player1.game_score += 1
+                    pygame.mixer.music.load('sound/breakout hit.wav')
+                    pygame.mixer.music.play(1)
                     self.hit = not self.hit
                 elif (tl and bl) or (tr and br):
                     print('hit side')
@@ -167,6 +174,8 @@ class Ball(pygame.sprite.Sprite):
                         angle = math.pi - angle
                         sprite.health -= self.strength
                     player1.game_score += 1
+                    pygame.mixer.music.load('sound/breakout hit.wav')
+                    pygame.mixer.music.play(1)
                     self.hit = not self.hit
                 elif tl or bl or br or tr:
                     print('hit corner')
@@ -176,6 +185,8 @@ class Ball(pygame.sprite.Sprite):
                         angle = angle + math.pi + (random.randint(1,3) * 0.01)
                         sprite.health -= self.strength
                     player1.game_score += 1
+                    pygame.mixer.music.load('sound/breakout hit.wav')
+                    pygame.mixer.music.play(1)
                     self.hit = not self.hit
 
         else:
@@ -262,6 +273,7 @@ class Paddle(pygame.sprite.Sprite):
         self.state = "still"
 
 
+
 class Brick(pygame.sprite.Sprite):
 
     def __init__(self, coordinate, health=100, power=False):
@@ -300,6 +312,8 @@ class Brick(pygame.sprite.Sprite):
             bricksprite.draw(screen)
         else:
             self.kill()
+            pygame.mixer.music.load('sound/breakout Death.wav')
+            pygame.mixer.music.play(1)
             brick_bg.fill((0, 0, 0))
             screen.blit(brick_bg, self.rect)
 
@@ -605,6 +619,8 @@ def main():
                 player1.reinit()
                 player1.lives += 1
                 player1.level += 1
+                pygame.mixer.music.load('sound/level+1.wav')
+                pygame.mixer.music.play(1)
 
 
             if 0 < player1.lives < 4:
